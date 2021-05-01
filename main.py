@@ -1,7 +1,12 @@
 import pygame
 from game import Game
 from math import ceil
+
+
 pygame.init()
+# definir une clock
+clock = pygame.time.Clock()
+FPS = 100
 # generer la fenêtre de nptre jeu
 # etape1 : definir le titre de notre jeu.
 # titre de  notre jeu#
@@ -66,3 +71,7 @@ while running:
             if play_button_rect.collidepoint(event.pos):
                 # mettre le jeu on mode lancer
                 game.start()
+                # jouer le son
+                game.sound_manager.play('click')
+    # fixer le nombre de fps sur ma clock
+    clock.tick(FPS)

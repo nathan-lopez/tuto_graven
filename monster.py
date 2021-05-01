@@ -1,21 +1,28 @@
 import pygame
 import random
-
+import animation
 
 # classe qui gere la notion du monter
-class Monster(pygame.sprite.Sprite):
+class Monster(animation.AnimateSprite):
 
-    def __init__(self, game):
-        super().__init__()
+    def __init__(self, game, name, size, offset=0):
+        super().__init__(name, size)
         self.game = game
         self.health = 100
         self.health_max = 100
-        self.velocity = random.randint(1, 3)
-        self.attack = 5
-        self.image = pygame.image.load("assets/mummy.png")
+        self.attack = 2
         self.rect = self.image.get_rect()
         self.rect.x = 1000 + random.randint(0, 300)
-        self.rect.y = 540
+        self.rect.y = 540 - offset
+        self.loot_amount = 10
+        self.start_animation()
+
+    def set_speed(self, speed):
+        self.default_speed = 3
+        self.velocity = random.randint(1, self.default_speed)
+
+    def set_loot_amount(self, amount):
+        self.loot_amount = amount
 
     def damage(self, amount):
         # infliger le degat au monstre
@@ -26,6 +33,19 @@ class Monster(pygame.sprite.Sprite):
             self.rect.x = 1000 + random.randint(0, 300)
             self.velocity = random.randint(1, 4)
             self.health = self.health_max
+            # ajouter le nombre de points
+            self.game.add_score(self.loot_amount)
+
+            # si la barre d'evenemet est charger au max
+            if self.game.comet_event.is_full_loaded():
+                # le retirer du jeu
+                self.game.all_monsters.remove(self)
+
+                # pour essayer de declancher la pluie de commet
+                self.game.comet_event.attempt_fall()
+
+    def update_animation(self):
+        self.animate(loop=True)
 
     def update_health_bar(self, surface):
         # barre de vie
@@ -53,3 +73,23 @@ class Monster(pygame.sprite.Sprite):
         # si le monstre est en colision avec le joueur , on va l'infliger de dega
         else:
             self.game.player.damage(self.attack)
+
+# definir une classe pour la momie
+class Mummy(Monster):
+    def __init__(self, game):
+
+        super().__init__(game, "mummy", (130, 130))
+        self.set_speed(3)
+        self.set_loot_amount(20)
+
+# definir une classe pour l'alliene
+class Alien(Monster):
+
+    def __init__(self, game):
+
+        super().__init__(game, 'alien', (300, 300), 127)
+        self.health = 250
+        self.health_max = 250
+        self.set_speed(2)
+        self.set_loot_amount(40)
+
